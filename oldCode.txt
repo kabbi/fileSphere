@@ -1,0 +1,85 @@
+		int numSegments=10.f*2*core::PI/(10*2/5);
+		numSegments=core::min_(numSegments, size);
+		float step=360.f/numSegments;
+		int folderStep=folderSize?(numSegments/folderSize):0;
+		for (int i=0, folderCnt=0, fileCnt=folderSize; i<numSegments; i++)
+		{
+			if (folderCnt<folderSize && i%folderStep==0)
+				((folderSphere*)subItems[folderCnt++])->getNode()->setRotation(core::vector3df(0, step*i, 0));
+			else if (fileCnt<size)
+			{
+				//float stepY=180.f/5;
+				//for (int j=0; j<5; j++)
+					((fileSphere*)subItems[fileCnt++])->getNode()->setRotation(core::vector3df(0, step*i, 0));
+			}
+		}
+
+
+
+
+		// count folders...
+		int folderSize=0;
+		for (int i=0; i<size; i++)
+			if (subItems[i]->getType()==FOLDER_ENTRY)
+				folderSize++;
+
+		int numSegments=10.f*2*core::PI/(10*2/5);
+		numSegments=core::min_(numSegments, size);
+		float step=360.f/numSegments;
+		int folderStep=folderSize?(numSegments/folderSize):0;
+		for (int i=0, folderCnt=0, fileCnt=folderSize; i<numSegments; i++)
+		{
+			if (folderCnt<folderSize && i%folderStep==0)
+				((folderSphere*)subItems[folderCnt++])->getNode()->setRotation(core::vector3df(0, step*i, 0));
+			else if (fileCnt<size)
+			{
+				float stepY=180.f/5;
+				for (int j=0; j<5, fileCnt<size; j++)
+				{
+					core::vector3df displ(0, (j-2)*4, 0);
+					((fileSphere*)subItems[fileCnt])->getSphere()->setPosition(core::vector3df(10-(j-2)*2, (j-2)*4, 0));
+					((fileSphere*)subItems[fileCnt++])->getNode()->setRotation(core::vector3df(0, step*i, 0));
+				}
+			}
+		}
+
+
+
+
+
+
+
+
+
+
+
+void scanFolder()
+	{
+		io::IFileSystem *fs=device->getFileSystem();
+		// save cur dir to restore it later
+		io::path oldDir=fs->getWorkingDirectory();
+		fs->changeWorkingDirectoryTo(fullPath);
+
+		io::IFileList *list=fs->createFileList();
+
+		int fileCount=list->getFileCount();
+		if (!list || fileCount==0) // not sure...
+			return;
+
+		for (int i=0; i<fileCount; i++)
+		{
+			if (list->getFileName(i)==L".." || list->getFileName(i)==L".")
+				continue;
+
+			core::stringw name(list->getFileName(i));
+			if (list->isDirectory(i))
+				subItems.push_back(new folderSphere(name, core::stringw(list->getFullFileName(i)), device, this));
+			else
+				subItems.push_back(new fileSphere(name, list->getFileSize(i), core::stringw(list->getFullFileName(i)), device, this));
+		}
+
+		recalcPos();
+
+		list->drop();
+		fs->changeWorkingDirectoryTo(oldDir);
+	}

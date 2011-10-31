@@ -1,0 +1,10 @@
+/Debug/
+/ipch/
+Irrlicht.dll
+fileVis.exe
+/*.ilk
+/*.sdf
+/*.opensdf
+/*.suo
+/*.user
+/*.pdb
