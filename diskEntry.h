@@ -122,15 +122,14 @@ public:
 	{
 		// recalc...
 		size=0;
-		for (int i=0; i<subItems.size(); i++)
+		for (u32 i=0; i<subItems.size(); i++)
 			size+=subItems[i]->getSize();
 		return size;
 	}
 
 	virtual ~folderEntry()
 	{
-		int size=subItems.size();
-		for (int i=0; i<size; i++)
+		for (u32 i=0; i<subItems.size(); i++)
 			delete subItems[i];
 	}
 };

@@ -6,16 +6,36 @@
 #include "diskEntry.h"
 #include <irrlicht.h>
 #include <windows.h>
+#include <iostream>
 #include "scaleAnimator.h"
 using namespace irr;
 
-const core::vector3df sphereOffset(10, 0, 0);
+const core::vector3df sphereOffset(15, 0, 0);
 const core::vector3df sphereScale(0.2f, 0.2f, 0.2f);
 const core::vector3df sphereScaleDef(1, 1, 1);
 const core::vector3df nullVector(0, 0, 0);
-const int sphereRadius=10;
-const int sphereDensity=32;
+const f32 sphereRadius=10;
+const u32 sphereDensity=32;
 //const video::E_MATERIAL_FLAG selFlag=video::EMF_POINTCLOUD;
+
+void moveCam(scene::ISceneManager *smgr, core::vector3df moveTo)
+{
+	scene::ISceneNodeAnimator *anim=smgr->createFlyStraightAnimator(smgr->getActiveCamera()->getPosition(), moveTo, 1000);
+	smgr->getActiveCamera()->addAnimator(anim);
+	anim->drop();
+}
+void updateAbsolutePosition(scene::ISceneManager *smgr, scene::ISceneNode *node)
+{
+	if (node->getParent()!=smgr->getRootSceneNode())
+		updateAbsolutePosition(smgr, node->getParent());
+	node->updateAbsolutePosition();
+}
+
+std::ostream &operator<<(std::ostream &os, core::vector3df &vec)
+{
+	os<<vec.X<<' '<<vec.Y<<' '<<vec.Z<<std::endl;
+	return os;
+}
 
 class entrySphere
 {
@@ -86,8 +106,26 @@ public:
 			{
 			case KEY_LEFT:
 			case KEY_RIGHT:
-				sphere->setRotation(sphere->getRotation()+core::vector3df(0, (event.KeyInput.Key==KEY_LEFT?-5:5), 0));
+				{
+					core::vector3df rot(0, 5.0f*(event.KeyInput.Key==KEY_LEFT?-1:1), 0);
+					sphere->setRotation(sphere->getRotation()+rot);
+				}
 				break;
+			}
+		}
+		if (event.EventType==EET_MOUSE_INPUT_EVENT)
+		{
+			if (event.MouseInput.Event==EMIE_LMOUSE_PRESSED_DOWN)
+			{
+				updateAbsolutePosition(smgr, sphere);
+				//smgr->getActiveCamera()->setParent(sphere);
+				smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
+				//smgr->getActiveCamera()->setPosition(core::vector3df(500, 500, 500)*sphere->getAbsoluteTransformation().getScale());
+				//smgr->getActiveCamera()->setRotation(nullVector);
+
+				//smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
+				//smgr->getActiveCamera()->setRotation(nullVector);
+				//moveCam(smgr, sphere->getAbsolutePosition()+core::vector3df(30, 50, 30));
 			}
 		}
 		return false;
@@ -132,21 +170,25 @@ public:
 
 	virtual void process()
 	{
-		if (active)// && parent) // !parent means root
+		if (!parent)
 		{
-			core::vector2di mousePos=device->getCursorControl()->getPosition();
-			core::line3df ray=smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(mousePos);
-
-			core::vector3df collPoint;
-			core::triangle3df collTrian;
-			scene::ISceneNode *collNode=smgr->getSceneCollisionManager()->getSceneNodeAndCollisionPointFromRay(ray, collPoint, collTrian);
-
-			setSelected(collNode==sphere);
+			video::IVideoDriver *driver=device->getVideoDriver();
+			driver->draw3DLine(core::vector3df(-10, 0, 0), core::vector3df(10, 0, 0), video::SColor(255, 255, 0, 0));
+			driver->draw3DLine(core::vector3df(0, -10, 0), core::vector3df(0, 10, 0), video::SColor(255, 0, 255, 0));
+			driver->draw3DLine(core::vector3df(0, 0, -10), core::vector3df(0, 0, 10), video::SColor(255, 0, 0, 255));
 		}
+	}
+
+	virtual void setSelected(scene::ISceneNode *node)
+	{
+		setSelected(node==sphere);
 	}
 
 	virtual void setSelected(bool sel)
 	{
+		if (selected==sel)
+			return;
+
 		selected=sel;
 		//sphere->getMaterial(0).setFlag(selFlag, !selected);
 		sphere->setDebugDataVisible(selected?scene::EDS_BBOX:0);

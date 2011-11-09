@@ -110,7 +110,7 @@ public:
 		scaleAnim->drop();
 
 		// and this would delete everything else
-		for (int i=0; i<children.size(); i++)
+		for (u32 i=0; i<children.size(); i++)
 		{
 			// we need to animate them, so...
 			children[i]->setDeleteNodes(false);
@@ -129,7 +129,7 @@ public:
 		if (entrySphere::onEvent(event))
 			return true;
 
-		for (int i=0; i<children.size(); i++)
+		for (u32 i=0; i<children.size(); i++)
 			if (children[i]->onEvent(event))
 				return true;
 
@@ -157,8 +157,30 @@ public:
 	{
 		entrySphere::process();
 
-		for (int i=0; i<children.size(); i++)
+		for (u32 i=0; i<children.size(); i++)
 			children[i]->process();
+
+		if (!parent)
+		{
+			core::vector2di mousePos=device->getCursorControl()->getPosition();
+			core::line3df ray=smgr->getSceneCollisionManager()->getRayFromScreenCoordinates(mousePos);
+
+			core::vector3df collPoint;
+			core::triangle3df collTrian;
+			scene::ISceneNode *collNode=smgr->getSceneCollisionManager()->getSceneNodeAndCollisionPointFromRay(ray, collPoint, collTrian);
+
+			setSelected(collNode);
+
+			device->getVideoDriver()->draw3DTriangle(collTrian, video::SColor(255, 0, 255, 255));
+		}
+	}
+
+	virtual void setSelected(scene::ISceneNode *node)
+	{
+		entrySphere::setSelected(node);
+
+		for (u32 i=0; i<children.size(); i++)
+			children[i]->setSelected(node);
 	}
 
 	virtual void setParent(entrySphere *parent)

@@ -22,7 +22,7 @@ video::IVideoDriver *driver;
 video::SColor bgColor;
 folderSphere *root;
 
-scene::ICameraSceneNode *freeCam, *mayaCam;
+scene::ICameraSceneNode *freeCam, *mainCam;
 
 class myReceiver : public IEventReceiver
 {
@@ -55,17 +55,17 @@ public:
 				case KEY_ESCAPE:
 					device->closeDevice();
 					break;
-				case KEY_SPACE:
+				case KEY_KEY_P:
 					if (smgr->getActiveCamera()==freeCam)
 					{
-						mayaCam->setPosition(freeCam->getPosition());
-						mayaCam->setTarget(freeCam->getTarget());
-						smgr->setActiveCamera(mayaCam);
+						mainCam->setPosition(freeCam->getPosition());
+						mainCam->setTarget(freeCam->getTarget());
+						smgr->setActiveCamera(mainCam);
 					}
 					else
 					{
-						freeCam->setPosition(mayaCam->getPosition());
-						freeCam->setTarget(mayaCam->getTarget());
+						freeCam->setPosition(mainCam->getPosition());
+						freeCam->setTarget(mainCam->getTarget());
 						smgr->setActiveCamera(freeCam);
 					}
 					break;
@@ -86,7 +86,7 @@ public:
 
 int main()
 {
-	srand(std::time(0));
+	srand((unsigned int)std::time(0));
 
 	video::E_DRIVER_TYPE driverType=video::EDT_DIRECT3D9;//driverChoiceConsole();
 	if (driverType==video::EDT_COUNT)
@@ -108,9 +108,13 @@ int main()
 	device->getFileSystem()->changeWorkingDirectoryTo("data");
 	
 	freeCam=smgr->addCameraSceneNodeFPS(0, 100.0f, 0.05f);
-	mayaCam=smgr->addCameraSceneNodeMaya();
-	mayaCam->setPosition(core::vector3df(30, 30, 30));
-	mayaCam->setTarget(core::vector3df(0, 0, 0));
+	mainCam=smgr->addCameraSceneNodeMaya();
+	mainCam->setPosition(core::vector3df(30, 30, 30));
+	mainCam->setTarget(nullVector);
+	mainCam->setNearValue(0.5f);
+	//mainCam->setFarValue(1000);
+
+	//smgr->addLightSceneNode(mayaCam);
 
 	// create our root sphere...
 	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/")), device);
@@ -118,6 +122,8 @@ int main()
 
 	//core::vector2di centre(driver->getScreenSize().Width/2,driver->getScreenSize().Height/2);
 
+	video::SMaterial nullMaterial;
+	nullMaterial.Lighting=false;
 	while(device->run() && driver)
 	{
 		if (device->isWindowActive())
@@ -126,7 +132,11 @@ int main()
 
 			driver->beginScene(true, true, bgColor);
 			smgr->drawAll();
+
+			driver->setMaterial(nullMaterial);
+			driver->setTransform(video::ETS_WORLD, core::IdentityMatrix);
 			root->process();
+
 			driver->endScene();
 		}
 	}
