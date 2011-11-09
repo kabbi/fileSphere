@@ -40,6 +40,9 @@ class CSceneNodeAnimatorFixedScale : public ISceneNodeAnimator
 
 					if (!scale.isBetweenPoints(StartScale, EndScale))
 					{
+						// we need this, if delta time is too large
+						// and we jumped out of our interval
+						node->setScale(EndScale);
 						node->removeAnimator(this);
 						return;
 					}
