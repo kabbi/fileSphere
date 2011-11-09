@@ -6,6 +6,8 @@
 #include "entrySphere.h"
 #include "fileSphere.h"
 
+const int maxLevel=3;
+
 class folderSphere : public entrySphere
 {
 protected:
@@ -17,23 +19,39 @@ protected:
 	{
 		int size=children.size();
 
-		// count folders...
-		int folderSize=0;
-		for (int i=0; i<size; i++)
-			if (children[i]->getEntry()->getType()==FOLDER_ENTRY)
-				folderSize++;
-
-		int numSegments=10.f*2*core::PI/(10*2/5);
-		numSegments=core::min_(numSegments, size);
-		float step=360.f/numSegments;
-		int folderStep=folderSize?(numSegments/folderSize):0;
-		for (int i=0, folderCnt=0, fileCnt=folderSize; i<numSegments; i++)
+		if (!parent)
 		{
-			if (folderCnt<folderSize && i%folderStep==0)
-				children[folderCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
-			else if (fileCnt<size)
-				children[fileCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
+			// count folders...
+			int folderSize=0;
+			for (int i=0; i<size; i++)
+				if (children[i]->getEntry()->getType()==FOLDER_ENTRY)
+					folderSize++;
+
+			int numSegments=2.0f*core::PI*(sphereRadius+5)/(10*2/5);
+			numSegments=core::min_(numSegments, size);
+			float step=360.f/numSegments;
+			int folderStep=folderSize?(numSegments/folderSize):0;
+			for (int i=0, folderCnt=0, fileCnt=folderSize; i<numSegments; i++)
+			{
+				if (folderCnt<folderSize && i%folderStep==0)
+					children[folderCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
+				else if (fileCnt<size)
+					children[fileCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
+			}
 		}
+
+		f32 startAngle=0, endAngle=core::PI; // by default, half of the sphere
+
+
+		int numLevels = (maxLevel-1)/2+1; // number of levels in one direction
+		int *numEntries = new int[numLevels]; // it will contain max nuber of spheres on each level
+		numEntries[0]=2.0f*core::PI*sphereRadius / (2*core::PI) * abs(endAngle-startAngle);
+		// 0 - center, 1 - above it, 2 - below it, 3 - above 1, 4 - below 2 etc...
+		for (int level=0; level<maxLevel; level++)
+		{
+
+		}
+		delete[] numEntries;
 	}
 
 	void scanFolder()
@@ -81,8 +99,6 @@ public:
 	{
 		createNode();
 		setParent(parent);
-
-		openFolder();
 	}
 
 	// create non-root node
@@ -148,6 +164,16 @@ public:
 
 					return true;
 				}
+			}
+		}
+
+		if (event.EventType==EET_KEY_INPUT_EVENT)
+		{
+			if (event.KeyInput.Key==KEY_KEY_D && event.KeyInput.PressedDown && selected)
+			{
+				fileEntry *subEntry=new fileEntry(core::stringw(L"debug"), 1, core::stringw(L"veryDebug"));
+				children.push_back(new fileSphere(subEntry, device, this));
+				recalcPos();
 			}
 		}
 		return false;

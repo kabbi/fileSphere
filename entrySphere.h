@@ -31,12 +31,6 @@ void updateAbsolutePosition(scene::ISceneManager *smgr, scene::ISceneNode *node)
 	node->updateAbsolutePosition();
 }
 
-std::ostream &operator<<(std::ostream &os, core::vector3df &vec)
-{
-	os<<vec.X<<' '<<vec.Y<<' '<<vec.Z<<std::endl;
-	return os;
-}
-
 class entrySphere
 {
 protected:
@@ -170,12 +164,27 @@ public:
 
 	virtual void process()
 	{
+		video::IVideoDriver *driver=device->getVideoDriver();
 		if (!parent)
 		{
-			video::IVideoDriver *driver=device->getVideoDriver();
-			driver->draw3DLine(core::vector3df(-10, 0, 0), core::vector3df(10, 0, 0), video::SColor(255, 255, 0, 0));
-			driver->draw3DLine(core::vector3df(0, -10, 0), core::vector3df(0, 10, 0), video::SColor(255, 0, 255, 0));
-			driver->draw3DLine(core::vector3df(0, 0, -10), core::vector3df(0, 0, 10), video::SColor(255, 0, 0, 255));
+			//driver->draw3DLine(core::vector3df(-10, 0, 0), core::vector3df(10, 0, 0), video::SColor(255, 255, 0, 0));
+			//driver->draw3DLine(core::vector3df(0, -10, 0), core::vector3df(0, 10, 0), video::SColor(255, 0, 255, 0));
+			//driver->draw3DLine(core::vector3df(0, 0, -10), core::vector3df(0, 0, 10), video::SColor(255, 0, 0, 255));
+		}
+		else
+		{
+			// draw two lines from the parent
+			// ??????????????????????????????
+			// how could i do so?????????????
+			f32 deg=360.0f / (2.0f*core::PI*(sphereRadius+5)/(2*sphereRadius/5)) / 2; // delta angle for the sphere
+			updateAbsolutePosition(smgr, sphere);
+			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), sphere->getAbsolutePosition(), video::SColor(255, 0, 255, 255));
+
+			core::vector3df vec=sphere->getAbsolutePosition()-parent->getSphere()->getAbsolutePosition();
+			vec.rotateXZBy(-deg);
+			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), vec*1.5f, video::SColor(255, 255, 0, 255));
+			vec.rotateXZBy(deg*2);
+			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), vec*1.5f, video::SColor(255, 255, 0, 255));
 		}
 	}
 

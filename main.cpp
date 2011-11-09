@@ -117,7 +117,7 @@ int main()
 	//smgr->addLightSceneNode(mayaCam);
 
 	// create our root sphere...
-	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/")), device);
+	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/test/")), device);
 	//cam->setParent(root->getSphere());
 
 	//core::vector2di centre(driver->getScreenSize().Width/2,driver->getScreenSize().Height/2);
