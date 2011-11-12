@@ -63,37 +63,43 @@ protected:
 	// create the 3D representation
 	virtual void createNode()
 	{
+		// node is our center, not really used now, but allows creation of additional animation/transformation layer
 		node=smgr->addEmptySceneNode(parent?parent->getDummy():0);
-
-		// we need to store it, because working directory will be changed...
-		if (texPath.size()==0)
-			texPath=device->getFileSystem()->getWorkingDirectory()+"/";
 
 		scene::IMesh *mesh=smgr->addSphereMesh("entrySphere", sphereRadius, sphereDensity, sphereDensity);
 		//smgr->getMeshManipulator()->flipSurfaces(mesh);
-
+		
+		// sphere is out main visual representation
 		sphere=smgr->addMeshSceneNode(mesh, node);
 		sphere->setMaterialFlag(video::EMF_LIGHTING, false);
-		sphere->setMaterialFlag(video::EMF_WIREFRAME, true);
-		setSelected(false);
-
+		sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
+		// deault one, is often overided by childrens' createNode function
+		sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"black.png"));
+		
+		// dummy is used to animate children without touching this node
 		dummy=smgr->addEmptySceneNode(sphere);
 
+		// selector is for use of selection (ray intersection) functions
 		scene::ITriangleSelector *selector=smgr->createTriangleSelector(mesh, sphere);
 		sphere->setTriangleSelector(selector);
 		selector->drop();
 
-		sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"black.png"));
-
+		// this node displays the name of our sphere
 		label=smgr->addTextSceneNode(device->getGUIEnvironment()->getBuiltInFont(), entry->getName().c_str(), video::SColor(255, 255, 255, 255), sphere);
+
+		setSelected(false);
 	}
 public:
-	entrySphere(diskEntry *entry, IrrlichtDevice *device, entrySphere *parent)
+	entrySphere(diskEntry *entry, IrrlichtDevice *device, entrySphere *parent) // selected is set true, to allow the constructor to set it false and thus to make function work (it checks the equality of the new state and the old one)
 		: device(device), smgr(device->getSceneManager()), parent(parent),
-		  selected(false), active(true), entry(entry), deleteNodes(true), drawDebugData(false)
+		  selected(true), active(true), entry(entry), deleteNodes(true), drawDebugData(false) 
 	{
 		if (!globalRoot) // first-time init, we are ROOT
+		{
 			globalRoot=globalParent=this;
+			// we need to store it, because working directory will be changed...
+			texPath=device->getFileSystem()->getWorkingDirectory()+io::path("/");
+		}
 	}
 
 	virtual bool onEvent(const SEvent &event)
@@ -213,6 +219,7 @@ public:
 		selected=sel;
 		//sphere->getMaterial(0).setFlag(selFlag, !selected);
 		sphere->setDebugDataVisible(selected?scene::EDS_BBOX:0);
+		//sphere->getMaterial(0).MaterialType=selected?video::EMT_SOLID:video::EMT_TRANSPARENT_ADD_COLOR;
 	}
 	virtual bool isSelected()
 	{

@@ -92,9 +92,6 @@ int main()
 {
 	srand((unsigned int)std::time(0));
 
-	float a=2.0f;
-	std::cout<<modf(4.0f, &a)<<std::endl;
-
 	video::E_DRIVER_TYPE driverType=video::EDT_DIRECT3D9;//driverChoiceConsole();
 	if (driverType==video::EDT_COUNT)
 		return 1;
@@ -129,8 +126,11 @@ int main()
 
 	//core::vector2di centre(driver->getScreenSize().Width/2,driver->getScreenSize().Height/2);
 
+	// for custom drawing, reset the material
 	video::SMaterial nullMaterial;
 	nullMaterial.Lighting=false;
+
+	int lastFPS=0;
 	while(device->run() && driver)
 	{
 		if (device->isWindowActive())
@@ -145,6 +145,17 @@ int main()
 			root->process();
 
 			driver->endScene();
+
+			if (driver->getFPS()!=lastFPS)
+			{
+				lastFPS=driver->getFPS();
+
+				core::stringw str("fileSphere project ");
+				str+=lastFPS;
+				str+=" FPS";
+
+				device->setWindowCaption(str.c_str());
+			}
 		}
 	}
 
