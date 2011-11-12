@@ -6,7 +6,7 @@
 #include "entrySphere.h"
 #include "fileSphere.h"
 
-const int maxLevel=3;
+const int maxLevel=1;
 
 class folderSphere : public entrySphere
 {
@@ -21,37 +21,59 @@ protected:
 
 		if (!parent)
 		{
-			// count folders...
-			int folderSize=0;
-			for (int i=0; i<size; i++)
-				if (children[i]->getEntry()->getType()==FOLDER_ENTRY)
-					folderSize++;
-
 			int numSegments=2.0f*core::PI*(sphereRadius+5)/(10*2/5);
-			numSegments=core::min_(numSegments, size);
 			float step=360.f/numSegments;
-			int folderStep=folderSize?(numSegments/folderSize):0;
-			for (int i=0, folderCnt=0, fileCnt=folderSize; i<numSegments; i++)
+			int curChild=0;
+
+			for (int level=0; level<10; level++)
 			{
-				if (folderCnt<folderSize && i%folderStep==0)
-					children[folderCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
-				else if (fileCnt<size)
-					children[fileCnt++]->getNode()->setRotation(core::vector3df(0, step*i, 0));
+				int curNumSegments=core::min_(numSegments, size-curChild);
+				for (int i=0; i<curNumSegments; i++)
+					children[curChild++]->getNode()->setRotation(core::vector3df(0, step*i, step*level));
 			}
 		}
-
-		f32 startAngle=0, endAngle=core::PI; // by default, half of the sphere
-
-
-		int numLevels = (maxLevel-1)/2+1; // number of levels in one direction
-		int *numEntries = new int[numLevels]; // it will contain max nuber of spheres on each level
-		numEntries[0]=2.0f*core::PI*sphereRadius / (2*core::PI) * abs(endAngle-startAngle);
-		// 0 - center, 1 - above it, 2 - below it, 3 - above 1, 4 - below 2 etc...
-		for (int level=0; level<maxLevel; level++)
+		else
 		{
+			// get current scale, recursive
+			updateAbsolutePosition(smgr, sphere);
+			f32 curScale=sphere->getAbsoluteTransformation().getScale().X;
+			f32 curRadius=sphereOffset.X*curScale;
+			f32 childDiameter=sphereRadius*curScale*sphereScale.X*2;
 
+			f32 startAngle, endAngle; // by default, half of the sphere
+			startAngle=core::degToRad(sphere->getPosition().getHorizontalAngle().X-90)+core::PI/4;
+			endAngle=startAngle+core::PI/2;
+
+			int numLevels = (maxLevel-1)/2+1; // number of levels in one direction
+			int *numEntries = new int[numLevels]; // it will contain max nuber of spheres on each level
+
+			f32 circleLength=2.0f*core::PI*curRadius / (2*core::PI) * abs(endAngle-startAngle);
+
+			numEntries[0]=core::min_(circleLength/childDiameter, (f32)size);
+			//numEntries[1]=numEntries[0];
+
+			f32 angleStep=(endAngle-startAngle)/numEntries[0];
+			angleStep=core::radToDeg(angleStep);
+
+			// 0 - center, +1 - above it, -1 - below it etc...
+			int level=0;
+			int levelInc=1;
+			int curChild=0;
+			while (abs(level)<numLevels && curChild<size)
+			{
+				f32 curAngle=core::radToDeg(startAngle)+angleStep/2;
+
+				int curNumEntries=numEntries[abs(level)];
+				for (int j=0; j<curNumEntries && curChild<size; j++)
+				{
+					children[curChild++]->getNode()->setRotation(core::vector3df(0, curAngle, 0));
+					curAngle+=angleStep;
+				}
+				level+=levelInc;
+				levelInc=-(levelInc+sgn(levelInc)*1);
+			}
+			delete[] numEntries;
 		}
-		delete[] numEntries;
 	}
 
 	void scanFolder()
@@ -169,10 +191,16 @@ public:
 
 		if (event.EventType==EET_KEY_INPUT_EVENT)
 		{
-			if (event.KeyInput.Key==KEY_KEY_D && event.KeyInput.PressedDown && selected)
+			if (event.KeyInput.Key==KEY_KEY_W && event.KeyInput.PressedDown && selected)
 			{
 				fileEntry *subEntry=new fileEntry(core::stringw(L"debug"), 1, core::stringw(L"veryDebug"));
 				children.push_back(new fileSphere(subEntry, device, this));
+				recalcPos();
+			}
+			if (event.KeyInput.Key==KEY_KEY_Q && event.KeyInput.PressedDown && selected)
+			{
+				folderEntry *subEntry=new folderEntry(core::stringw(L"debugFolder"), core::stringw(L"veryDebug"));
+				children.push_back(new folderSphere(subEntry, device, this));
 				recalcPos();
 			}
 		}
@@ -207,6 +235,14 @@ public:
 
 		for (u32 i=0; i<children.size(); i++)
 			children[i]->setSelected(node);
+	}
+
+	virtual void setDrawDebugData(bool flag)
+	{
+		entrySphere::setDrawDebugData(flag);
+		
+		for (u32 i=0; i<children.size(); i++)
+			children[i]->setDrawDebugData(flag);
 	}
 
 	virtual void setParent(entrySphere *parent)

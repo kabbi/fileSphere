@@ -2,6 +2,7 @@
 /ipch/
 Irrlicht.dll
 fileVis.exe
+fileVis.vcxproj.filters
 /*.ilk
 /*.sdf
 /*.opensdf

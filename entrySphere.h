@@ -7,7 +7,7 @@
 #include <irrlicht.h>
 #include <windows.h>
 #include <iostream>
-#include "scaleAnimator.h"
+#include "fixedScaleAnimator.h"
 using namespace irr;
 
 const core::vector3df sphereOffset(15, 0, 0);
@@ -15,7 +15,7 @@ const core::vector3df sphereScale(0.2f, 0.2f, 0.2f);
 const core::vector3df sphereScaleDef(1, 1, 1);
 const core::vector3df nullVector(0, 0, 0);
 const f32 sphereRadius=10;
-const u32 sphereDensity=32;
+const u32 sphereDensity=16;
 //const video::E_MATERIAL_FLAG selFlag=video::EMF_POINTCLOUD;
 
 void moveCam(scene::ISceneManager *smgr, core::vector3df moveTo)
@@ -29,6 +29,12 @@ void updateAbsolutePosition(scene::ISceneManager *smgr, scene::ISceneNode *node)
 	if (node->getParent()!=smgr->getRootSceneNode())
 		updateAbsolutePosition(smgr, node->getParent());
 	node->updateAbsolutePosition();
+}
+int sgn(int x)
+{
+	if (x==0)
+		return 0;
+	return (x>0)?1:-1;
 }
 
 class entrySphere
@@ -49,6 +55,7 @@ protected:
 
 	entrySphere *parent;
 
+	bool drawDebugData;
 	bool deleteNodes;
 	bool selected;
 	bool active;
@@ -67,7 +74,7 @@ protected:
 
 		sphere=smgr->addMeshSceneNode(mesh, node);
 		sphere->setMaterialFlag(video::EMF_LIGHTING, false);
-		sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
+		sphere->setMaterialFlag(video::EMF_WIREFRAME, true);
 		setSelected(false);
 
 		dummy=smgr->addEmptySceneNode(sphere);
@@ -83,7 +90,7 @@ protected:
 public:
 	entrySphere(diskEntry *entry, IrrlichtDevice *device, entrySphere *parent)
 		: device(device), smgr(device->getSceneManager()), parent(parent),
-		  selected(false), active(true), entry(entry), deleteNodes(true)
+		  selected(false), active(true), entry(entry), deleteNodes(true), drawDebugData(false)
 	{
 		if (!globalRoot) // first-time init, we are ROOT
 			globalRoot=globalParent=this;
@@ -165,26 +172,31 @@ public:
 	virtual void process()
 	{
 		video::IVideoDriver *driver=device->getVideoDriver();
-		if (!parent)
+		if (drawDebugData)
 		{
-			//driver->draw3DLine(core::vector3df(-10, 0, 0), core::vector3df(10, 0, 0), video::SColor(255, 255, 0, 0));
-			//driver->draw3DLine(core::vector3df(0, -10, 0), core::vector3df(0, 10, 0), video::SColor(255, 0, 255, 0));
-			//driver->draw3DLine(core::vector3df(0, 0, -10), core::vector3df(0, 0, 10), video::SColor(255, 0, 0, 255));
-		}
-		else
-		{
-			// draw two lines from the parent
-			// ??????????????????????????????
-			// how could i do so?????????????
-			f32 deg=360.0f / (2.0f*core::PI*(sphereRadius+5)/(2*sphereRadius/5)) / 2; // delta angle for the sphere
-			updateAbsolutePosition(smgr, sphere);
-			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), sphere->getAbsolutePosition(), video::SColor(255, 0, 255, 255));
+			if (!parent)
+			{
+				driver->draw3DLine(core::vector3df(-10, 0, 0), core::vector3df(10, 0, 0), video::SColor(255, 255, 0, 0));
+				driver->draw3DLine(core::vector3df(0, -10, 0), core::vector3df(0, 10, 0), video::SColor(255, 0, 255, 0));
+				driver->draw3DLine(core::vector3df(0, 0, -10), core::vector3df(0, 0, 10), video::SColor(255, 0, 0, 255));
+			}
+			else
+			{
+				// draw two lines from the parent
+				f32 deg=360.0f / (2.0f*core::PI*(sphereRadius+5)/(2*sphereRadius/5)) / 2; // delta angle for the sphere
+				updateAbsolutePosition(smgr, sphere);
+				driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), sphere->getAbsolutePosition(), video::SColor(255, 0, 255, 255));
 
-			core::vector3df vec=sphere->getAbsolutePosition()-parent->getSphere()->getAbsolutePosition();
-			vec.rotateXZBy(-deg);
-			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), vec*1.5f, video::SColor(255, 255, 0, 255));
-			vec.rotateXZBy(deg*2);
-			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), vec*1.5f, video::SColor(255, 255, 0, 255));
+				core::vector3df vec=sphere->getAbsolutePosition()-parent->getSphere()->getAbsolutePosition();
+
+				vec.rotateXZBy(-deg);
+				driver->draw3DLine(parent->getSphere()->getAbsolutePosition(),
+					parent->getSphere()->getAbsolutePosition()+vec*1.5f, video::SColor(255, 255, 0, 255));
+
+				vec.rotateXZBy(deg*2);
+				driver->draw3DLine(parent->getSphere()->getAbsolutePosition(),
+					parent->getSphere()->getAbsolutePosition()+ vec*1.5f, video::SColor(255, 255, 0, 255));
+			}
 		}
 	}
 
@@ -238,6 +250,15 @@ public:
 	virtual bool areNodesDeleted()
 	{
 		return deleteNodes;
+	}
+
+	virtual void setDrawDebugData(bool flag)
+	{
+		drawDebugData=flag;
+	}
+	virtual bool isDrawingDebugData()
+	{
+		return drawDebugData;
 	}
 
 	virtual ~entrySphere()

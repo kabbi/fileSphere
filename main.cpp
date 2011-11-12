@@ -69,12 +69,16 @@ public:
 						smgr->setActiveCamera(freeCam);
 					}
 					break;
+				case KEY_F1:
+					root->setDrawDebugData(!root->isDrawingDebugData());
+					break;
 				case KEY_BACK:
 					if (bgColor.getLuminance()==0)
 						bgColor.set(255, 255, 255, 255);
 					else
 						bgColor.set(255, 0, 0, 0);
 					break;
+
 				}
 			}
 		}
@@ -87,6 +91,9 @@ public:
 int main()
 {
 	srand((unsigned int)std::time(0));
+
+	float a=2.0f;
+	std::cout<<modf(4.0f, &a)<<std::endl;
 
 	video::E_DRIVER_TYPE driverType=video::EDT_DIRECT3D9;//driverChoiceConsole();
 	if (driverType==video::EDT_COUNT)
@@ -114,7 +121,7 @@ int main()
 	mainCam->setNearValue(0.5f);
 	//mainCam->setFarValue(1000);
 
-	//smgr->addLightSceneNode(mayaCam);
+	//smgr->addLightSceneNode(0, mainCam->getPosition());
 
 	// create our root sphere...
 	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/test/")), device);
