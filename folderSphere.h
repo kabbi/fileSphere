@@ -21,15 +21,37 @@ protected:
 
 		if (!parent)
 		{
-			int numSegments=2.0f*core::PI*(sphereRadius+5)/(10*2/5);
+			// lots of mathematical functions...
+			float distance=sphereOffset.X;
+			int numSegments=2.0f*core::PI*distance/(10*2/5);
 			float step=360.f/numSegments;
 			int curChild=0;
+			int maxLevel=distance*2/(10*2/5);
 
-			for (int level=0; level<10; level++)
+			// 0 - center, +1 - above it, -1 - below it etc...
+			int level=0;
+			int levelInc=1;
+			while (abs(level)<maxLevel)
 			{
-				int curNumSegments=core::min_(numSegments, size-curChild);
+				// and here again, recount number of entries fitting on each level, and position them
+				float curDistance=distance*sin(core::PI/2-core::degToRad(step*level));
+
+				int curNumSegments=2.0f*core::PI*curDistance/(10*2/5);
+				curNumSegments=core::min_(curNumSegments, size-curChild);
+
+				float curStep=360.f/curNumSegments;
+
 				for (int i=0; i<curNumSegments; i++)
-					children[curChild++]->getNode()->setRotation(core::vector3df(0, step*i, step*level));
+				{
+					// spherical coordinates transform
+					float fi=core::degToRad(curStep*i);
+					float si=core::PI/2-core::degToRad(step*level);
+					float r=distance;
+					children[curChild++]->getSphere()->setPosition(core::vector3df(r*sin(si)*cos(fi), r*cos(si), r*sin(si)*sin(fi)));
+				}
+
+				level+=levelInc;
+				levelInc=-(levelInc+sgn(levelInc)*1); // why have I written 1 here??
 			}
 		}
 		else
