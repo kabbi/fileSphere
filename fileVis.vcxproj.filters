@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="fixedScaleAnimator.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="entrySphere.cpp">
+      <Filter>Sphere system</Filter>
+    </ClCompile>
+    <ClCompile Include="fileSphere.cpp">
+      <Filter>Sphere system</Filter>
+    </ClCompile>
+    <ClCompile Include="folderSphere.cpp">
+      <Filter>Sphere system</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="diskEntry.h">
+      <Filter>File system</Filter>
+    </ClInclude>
+    <ClInclude Include="fixedScaleAnimator.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="folderSphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="entrySphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="fileSphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="3D">
+      <UniqueIdentifier>{2fc369ca-7eed-4f07-9782-c83bb019e605}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sphere system">
+      <UniqueIdentifier>{85a2b283-694c-482c-9380-94a51b70d36b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File system">
+      <UniqueIdentifier>{ec8d4d1b-f3dc-4bff-8583-b31169f77811}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

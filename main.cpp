@@ -14,6 +14,25 @@ using namespace irr;
 #pragma comment(lib, "Irrlicht.lib")
 #endif
 
+/// Main TODO list comes here ///
+/*
+1-sphere positioning improvements
+2-visual effects
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
 IrrlichtDevice *device;
 scene::ISceneManager *smgr;
 gui::IGUIEnvironment *guienv;
@@ -118,7 +137,7 @@ int main()
 	mainCam->setNearValue(0.5f);
 	//mainCam->setFarValue(1000);
 
-	//smgr->addLightSceneNode(0, mainCam->getPosition());
+	smgr->addLightSceneNode(mainCam);//0, mainCam->getPosition());
 
 	// create our root sphere...
 	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/test/")), device);
