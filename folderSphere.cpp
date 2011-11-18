@@ -148,6 +148,9 @@ void folderSphere::openFolder()
 	scene::ISceneNodeAnimator *anim=scene::createFixedScaleAnimator(device, nullVector, sphereScaleDef/100, sphereScaleDef);
 	dummy->addAnimator(anim);
 	anim->drop();
+
+	if (children.size())
+		sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
 }
 void folderSphere::closeFolder()
 {
@@ -169,6 +172,8 @@ void folderSphere::closeFolder()
 		delete children[i];
 	}
 	children.clear();
+
+	sphere->setMaterialFlag(video::EMF_POINTCLOUD, false);
 }
 
 // starting from here, we should advice almost all entrySphere's functions to every children
@@ -263,7 +268,7 @@ void folderSphere::setParent(entrySphere *parent)
 
 	// if we are new root
 	if (!parent)
-		scanFolder();
+		openFolder();
 
 	sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"grey.png"));
 }

@@ -129,6 +129,8 @@ int main()
 	guienv=device->getGUIEnvironment();
 
 	device->getFileSystem()->changeWorkingDirectoryTo("data");
+
+	smgr->addSkyDomeSceneNode(driver->getTexture("skydome2.jpg"));
 	
 	freeCam=smgr->addCameraSceneNodeFPS(0, 100.0f, 0.05f);
 	mainCam=smgr->addCameraSceneNodeMaya();

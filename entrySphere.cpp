@@ -48,8 +48,8 @@ void entrySphere::createNode()
 
 	// sphere is out main visual representation
 	sphere=smgr->addMeshSceneNode(mesh, node);
-	sphere->setMaterialFlag(video::EMF_LIGHTING, false);
-	sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
+	//sphere->setMaterialFlag(video::EMF_LIGHTING, false);
+	//sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
 	// deault one, is often overided by childrens' createNode function
 	sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"black.png"));
 
@@ -62,7 +62,7 @@ void entrySphere::createNode()
 	selector->drop();
 
 	// this node displays the name of our sphere
-	label=smgr->addTextSceneNode(device->getGUIEnvironment()->getBuiltInFont(), entry->getName().c_str(), video::SColor(255, 255, 255, 255), sphere);
+	label=smgr->addTextSceneNode(device->getGUIEnvironment()->getBuiltInFont(), entry->getName().c_str(), video::SColor(255, 0, 0, 0), sphere);
 
 	setSelected(false);
 }
@@ -149,6 +149,9 @@ void entrySphere::process()
 				parent->getSphere()->getAbsolutePosition()+ vec*1.5f, video::SColor(255, 255, 0, 255));
 		}
 	}
+	// show or hide our text node based on the distance from the cam
+	float dist=label->getAbsolutePosition().getDistanceFrom(smgr->getActiveCamera()->getAbsolutePosition());
+	label->setVisible(dist<30);
 }
 
 void entrySphere::setSelected(bool sel)

@@ -16,6 +16,8 @@ protected:
 
 	// recalc the position of all subnodes, may be recursive
 	void recalcPos();
+	// startAngle and endAngle - angles in radians, bounaries for the nodes' placement
+	void recalcChildrenPos(f32 startAngle, f32 endAngle);
 
 	void scanFolder();
 

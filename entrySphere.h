@@ -59,6 +59,8 @@ public:
 
 	virtual scene::ISceneNode *getDummy() {return dummy;}
 
+	virtual scene::ITextSceneNode *getLabel(){return label;}
+
 	virtual void setParent(entrySphere *parent);
 	virtual entrySphere *getParent() {return parent;}
 
