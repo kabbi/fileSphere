@@ -112,10 +112,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="entrySphere.cpp" />
-    <ClCompile Include="fileSphere.cpp" />
+    <ClCompile Include="CMainPositioner.cpp" />
+    <ClCompile Include="CEntrySphere.cpp" />
+    <ClCompile Include="CFileSphere.cpp" />
     <ClCompile Include="fixedScaleAnimator.cpp" />
-    <ClCompile Include="folderSphere.cpp" />
+    <ClCompile Include="CFolderSphere.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -127,11 +128,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CMainPositioner.h" />
     <ClInclude Include="diskEntry.h" />
-    <ClInclude Include="entrySphere.h" />
-    <ClInclude Include="fileSphere.h" />
-    <ClInclude Include="folderSphere.h" />
-    <ClInclude Include="fixedScaleAnimator.h" />
+    <ClInclude Include="IEntryPositioner.h" />
+    <ClInclude Include="CEntrySphere.h" />
+    <ClInclude Include="CFileSphere.h" />
+    <ClInclude Include="CFolderSphere.h" />
+    <ClInclude Include="CFixedScaleAnimator.h" />
+    <ClInclude Include="programConfig.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

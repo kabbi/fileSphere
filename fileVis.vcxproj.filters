@@ -5,13 +5,16 @@
     <ClCompile Include="fixedScaleAnimator.cpp">
       <Filter>3D</Filter>
     </ClCompile>
-    <ClCompile Include="entrySphere.cpp">
+    <ClCompile Include="CEntrySphere.cpp">
       <Filter>Sphere system</Filter>
     </ClCompile>
-    <ClCompile Include="fileSphere.cpp">
+    <ClCompile Include="CFileSphere.cpp">
       <Filter>Sphere system</Filter>
     </ClCompile>
-    <ClCompile Include="folderSphere.cpp">
+    <ClCompile Include="CFolderSphere.cpp">
+      <Filter>Sphere system</Filter>
+    </ClCompile>
+    <ClCompile Include="CMainPositioner.cpp">
       <Filter>Sphere system</Filter>
     </ClCompile>
   </ItemGroup>
@@ -19,18 +22,25 @@
     <ClInclude Include="diskEntry.h">
       <Filter>File system</Filter>
     </ClInclude>
-    <ClInclude Include="fixedScaleAnimator.h">
+    <ClInclude Include="IEntryPositioner.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="CEntrySphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="CFileSphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="CFolderSphere.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="CFixedScaleAnimator.h">
       <Filter>3D</Filter>
     </ClInclude>
-    <ClInclude Include="folderSphere.h">
+    <ClInclude Include="CMainPositioner.h">
       <Filter>Sphere system</Filter>
     </ClInclude>
-    <ClInclude Include="entrySphere.h">
-      <Filter>Sphere system</Filter>
-    </ClInclude>
-    <ClInclude Include="fileSphere.h">
-      <Filter>Sphere system</Filter>
-    </ClInclude>
+    <ClInclude Include="programConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="3D">

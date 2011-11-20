@@ -4,9 +4,8 @@
 #include <irrlicht.h>
 #include <ctime>
 #include "driverChoice.h"
-#include "fileSphere.h"
-#include "folderSphere.h"
-#include "diskEntry.h"
+#include "CFolderSphere.h"
+#include "CMainPositioner.h"
 
 using namespace irr;
 
@@ -15,6 +14,7 @@ using namespace irr;
 #endif
 
 /// Main TODO list comes here ///
+
 /*
 1-sphere positioning improvements
 2-visual effects
@@ -130,7 +130,7 @@ int main()
 
 	device->getFileSystem()->changeWorkingDirectoryTo("data");
 
-	smgr->addSkyDomeSceneNode(driver->getTexture("skydome2.jpg"));
+	smgr->addSkyDomeSceneNode(driver->getTexture("ImagineWallpaper.BMP"));
 	
 	freeCam=smgr->addCameraSceneNodeFPS(0, 100.0f, 0.05f);
 	mainCam=smgr->addCameraSceneNodeMaya();
@@ -143,6 +143,8 @@ int main()
 
 	// create our root sphere...
 	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/test/")), device);
+	CMainPositioner poser;
+	root->setPositioner(&poser);
 	//cam->setParent(root->getSphere());
 
 	//core::vector2di centre(driver->getScreenSize().Width/2,driver->getScreenSize().Height/2);
