@@ -142,7 +142,7 @@ int main()
 	smgr->addLightSceneNode(mainCam);//0, mainCam->getPosition());
 
 	// create our root sphere...
-	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/tmp/test/")), device);
+	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/")), device);
 	CMainPositioner poser;
 	root->setPositioner(&poser);
 	//cam->setParent(root->getSphere());

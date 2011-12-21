@@ -1,0 +1,12 @@
+scene root
+
+//root entry:
+---node // just base
+------sphere // main visual
+---------dummy // transform/animate
+
+---------//child node
+------------node
+---------------sphere
+
+...

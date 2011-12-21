@@ -39,7 +39,12 @@ void CMainPositioner::recalcPositions(scene::ISceneManager *smgr, entrySphere *c
 			float fi=startAngle+curStep*i;
 			float si=core::PI/2-step*level;
 			float r=sphereOffset;
-			children[curChild++]->getSphere()->setPosition(core::vector3df(r*sin(si)*cos(fi), r*cos(si), r*sin(si)*sin(fi)));
+			children[curChild]->getSphere()->setPosition(core::vector3df(r*sin(si)*cos(fi), r*cos(si), r*sin(si)*sin(fi)));
+
+			core::vector3df rot(children[curChild]->getSphere()->getPosition().getHorizontalAngle());
+			rot.Y-=45;
+			children[curChild]->getSphere()->setRotation(rot);
+			curChild++;
 		}
 
 		level+=levelInc;
@@ -54,8 +59,8 @@ void CMainPositioner::recalcPositions(scene::ISceneManager *smgr, entrySphere *c
 	else
 	{
 		// find the right angle
-		f32 startAngle=core::degToRad(current->getSphere()->getPosition().getHorizontalAngle().X-90)+core::PI/4;
-		f32 endAngle=startAngle+core::PI/4;
+		f32 startAngle=/*core::degToRad(current->getSphere()->getPosition().getHorizontalAngle().Y)*/0;
+		f32 endAngle=startAngle+core::PI/2;
 		recalcPositions(smgr, current, children, startAngle, endAngle); // cool "shield" positioning
 	}
 }

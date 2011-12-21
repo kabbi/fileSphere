@@ -18,7 +18,7 @@ using namespace irr;
 void moveCam(scene::ISceneManager *smgr, core::vector3df moveTo);
 void updateAbsolutePosition(scene::ISceneManager *smgr, scene::ISceneNode *node);
 int sgn(int x);
-void createMegaSCaleAnimator(scene::ISceneManager *smgr, scene::ISceneNode *node, u32 time);
+void createMegaScaleAnimator(scene::ISceneManager *smgr, scene::ISceneNode *node, u32 time);
 
 class entrySphere
 {
@@ -78,7 +78,7 @@ public:
 	virtual entrySphere *getGlobalRoot() {return globalRoot;}
 	virtual entrySphere *getGlobalParent() {return globalParent;}
 
-	virtual void setDrawDebugData(bool flag) {drawDebugData=flag;}
+	virtual void setDrawDebugData(bool flag) {drawDebugData=flag;node->setDebugDataVisible(flag?scene::EDS_FULL:scene::EDS_OFF);dummy->setDebugDataVisible(flag?scene::EDS_FULL:scene::EDS_OFF);}
 	virtual bool isDrawingDebugData() {return drawDebugData;}
 
 	virtual void setPositioner(IEntryPositioner *pos) {positioner=pos;}

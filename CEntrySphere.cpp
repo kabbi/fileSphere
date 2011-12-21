@@ -3,7 +3,7 @@
 #include "CEntrySphere.h"
 
 /// Some helper functions, must be refactored ///
-void createMegaSCaleAnimator(IrrlichtDevice *device, scene::ISceneNode *node, core::vector3df newScale, u32 time)
+void createMegaScaleAnimator(IrrlichtDevice *device, scene::ISceneNode *node, core::vector3df newScale, u32 time)
 {
 	scene::ISceneManager *smgr=device->getSceneManager();
 
@@ -24,11 +24,33 @@ void createMegaSCaleAnimator(IrrlichtDevice *device, scene::ISceneNode *node, co
 	parent->setScale(parent->getScale()/relChildScale); // return all the things to the old state
 	core::vector3df deltaPos(newChildPos-oldChildPos);
 
+	// parent scale properties
+	core::vector3df oldParentScale=parent->getScale();
+	core::vector3df newParentScale=oldParentScale*relChildScale;
+
 	// create two animators: move and scale
 	scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(parent->getPosition(), parent->getPosition()-deltaPos, time);
-	scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(device, oldChildScale, (newScale-oldChildScale)/(f32)time/1000.0f, newScale);
+	scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(device, oldParentScale, (newParentScale-oldParentScale)/(f32)time, newParentScale);
 	parent->addAnimator(moveAnim);
 	parent->addAnimator(scaleAnim);
+	moveAnim->drop();
+	scaleAnim->drop();
+}
+void createTransitionAnimator(IrrlichtDevice *device, scene::ISceneNode *node, u32 time)
+{
+	scene::ISceneManager *smgr=device->getSceneManager();
+
+	updateAbsolutePosition(smgr, node);
+	core::vector3df newScale(1, 1, 1);
+	core::vector3df oldChildScale=node->getAbsoluteTransformation().getScale();
+	core::vector3df relChildScale=newScale/oldChildScale;
+	core::vector3df deltaPos(node->getAbsolutePosition()); // we always need to move to the center
+
+	// create two animators: move and scale
+	scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(deltaPos, nullVector, time);
+	scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(device, oldChildScale, (newScale-oldChildScale)/(f32)time, newScale);
+	node->addAnimator(moveAnim);
+	node->addAnimator(scaleAnim);
 	moveAnim->drop();
 	scaleAnim->drop();
 }
@@ -106,6 +128,14 @@ bool entrySphere::onEvent(const SEvent &event)
 	{
 		switch (event.KeyInput.Key)
 		{
+		case KEY_KEY_Z:
+			if (selected)
+			{
+				//createMegaScaleAnimator(device, node, core::vector3df(1, 1, 1), 1000);
+				setParent(0);
+				return true;
+			}
+			break;
 		case KEY_LEFT:
 		case KEY_RIGHT:
 			{
@@ -121,7 +151,8 @@ bool entrySphere::onEvent(const SEvent &event)
 		{
 			updateAbsolutePosition(smgr, sphere);
 			//smgr->getActiveCamera()->setParent(sphere);
-			smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
+			if (entry->getType()==FOLDER_ENTRY)
+				smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
 			//smgr->getActiveCamera()->setPosition(core::vector3df(500, 500, 500)*sphere->getAbsoluteTransformation().getScale());
 			//smgr->getActiveCamera()->setRotation(nullVector);
 
@@ -135,10 +166,16 @@ bool entrySphere::onEvent(const SEvent &event)
 
 void entrySphere::setParent(entrySphere *parent)
 {
+	updateAbsolutePosition(smgr, sphere);
+	core::vector3df oldPos=sphere->getAbsolutePosition();
+
 	node->setParent(parent ? parent->getDummy() : smgr->getRootSceneNode());
 	sphere->setPosition(parent ? sphereOffsetVec : nullVector);
 	sphere->setScale(parent ? sphereScaleVec : sphereScaleDef);
-	sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"black.png"));
+
+	//scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(oldPos, parent ? sphereOffsetVec : nullVector, 1000);
+	//sphere->addAnimator(moveAnim);
+	//moveAnim->drop();
 
 	if (this->parent && !parent)
 	{

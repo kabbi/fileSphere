@@ -1,6 +1,6 @@
 
 
-#include "fixedScaleAnimator.h"
+#include "CFixedScaleAnimator.h"
 
 namespace irr
 {
