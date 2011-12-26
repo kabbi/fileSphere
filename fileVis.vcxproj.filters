@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="fixedScaleAnimator.cpp">
-      <Filter>3D</Filter>
-    </ClCompile>
     <ClCompile Include="CEntrySphere.cpp">
       <Filter>Sphere system</Filter>
     </ClCompile>
@@ -17,11 +14,20 @@
     <ClCompile Include="CMainPositioner.cpp">
       <Filter>Sphere system</Filter>
     </ClCompile>
+    <ClCompile Include="CFixedScaleAnimator.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="CCleanupAnimator.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="CSphereSystem.cpp">
+      <Filter>Sphere system</Filter>
+    </ClCompile>
+    <ClCompile Include="CFilesystemContentProvider.cpp">
+      <Filter>content</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="diskEntry.h">
-      <Filter>File system</Filter>
-    </ClInclude>
     <ClInclude Include="IEntryPositioner.h">
       <Filter>Sphere system</Filter>
     </ClInclude>
@@ -41,6 +47,24 @@
       <Filter>Sphere system</Filter>
     </ClInclude>
     <ClInclude Include="programConfig.h" />
+    <ClInclude Include="diskEntry.h">
+      <Filter>File system</Filter>
+    </ClInclude>
+    <ClInclude Include="CCleanupAnimator.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="CFixedMoveAnimator.h">
+      <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="CSphereSystem.h">
+      <Filter>Sphere system</Filter>
+    </ClInclude>
+    <ClInclude Include="IContentProvider.h">
+      <Filter>content</Filter>
+    </ClInclude>
+    <ClInclude Include="CFilesystemContentProvider.h">
+      <Filter>content</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="3D">
@@ -51,6 +75,9 @@
     </Filter>
     <Filter Include="File system">
       <UniqueIdentifier>{ec8d4d1b-f3dc-4bff-8583-b31169f77811}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="content">
+      <UniqueIdentifier>{934c93d4-c249-432a-942f-34f001aa1ff9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

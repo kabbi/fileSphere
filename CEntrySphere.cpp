@@ -2,125 +2,124 @@
 
 #include "CEntrySphere.h"
 
+#include "CFixedMoveAnimator.h"
+#include "CFixedScaleAnimator.h"
+
 /// Some helper functions, must be refactored ///
-void createMegaScaleAnimator(IrrlichtDevice *device, scene::ISceneNode *node, core::vector3df newScale, u32 time)
-{
-	scene::ISceneManager *smgr=device->getSceneManager();
-
-	updateAbsolutePosition(smgr, node);
-	core::vector3df oldChildScale=node->getAbsoluteTransformation().getScale();
-	core::vector3df relChildScale=newScale/oldChildScale;
-	core::vector3df oldChildPos(node->getAbsolutePosition());
-
-	// find the most parent parent
-	scene::ISceneNode *parent=node;
-	while (parent->getParent() && parent->getParent()!=smgr->getRootSceneNode())
-		parent=parent->getParent();
-
-	// find the new position
-	parent->setScale(parent->getScale()*relChildScale); // scale the whole system and calc the new node's position
-	updateAbsolutePosition(smgr, node);
-	core::vector3df newChildPos(node->getAbsolutePosition());
-	parent->setScale(parent->getScale()/relChildScale); // return all the things to the old state
-	core::vector3df deltaPos(newChildPos-oldChildPos);
-
-	// parent scale properties
-	core::vector3df oldParentScale=parent->getScale();
-	core::vector3df newParentScale=oldParentScale*relChildScale;
-
-	// create two animators: move and scale
-	scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(parent->getPosition(), parent->getPosition()-deltaPos, time);
-	scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(device, oldParentScale, (newParentScale-oldParentScale)/(f32)time, newParentScale);
-	parent->addAnimator(moveAnim);
-	parent->addAnimator(scaleAnim);
-	moveAnim->drop();
-	scaleAnim->drop();
-}
-void createTransitionAnimator(IrrlichtDevice *device, scene::ISceneNode *node, u32 time)
-{
-	scene::ISceneManager *smgr=device->getSceneManager();
-
-	updateAbsolutePosition(smgr, node);
-	core::vector3df newScale(1, 1, 1);
-	core::vector3df oldChildScale=node->getAbsoluteTransformation().getScale();
-	core::vector3df relChildScale=newScale/oldChildScale;
-	core::vector3df deltaPos(node->getAbsolutePosition()); // we always need to move to the center
-
-	// create two animators: move and scale
-	scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(deltaPos, nullVector, time);
-	scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(device, oldChildScale, (newScale-oldChildScale)/(f32)time, newScale);
-	node->addAnimator(moveAnim);
-	node->addAnimator(scaleAnim);
-	moveAnim->drop();
-	scaleAnim->drop();
-}
-void moveCam(scene::ISceneManager *smgr, core::vector3df moveTo)
-{
-	scene::ISceneNodeAnimator *anim=smgr->createFlyStraightAnimator(smgr->getActiveCamera()->getPosition(), moveTo, 1000);
-	smgr->getActiveCamera()->addAnimator(anim);
-	anim->drop();
-}
 void updateAbsolutePosition(scene::ISceneManager *smgr, scene::ISceneNode *node)
 {
 	if (node->getParent()!=smgr->getRootSceneNode())
 		updateAbsolutePosition(smgr, node->getParent());
 	node->updateAbsolutePosition();
 }
-int sgn(int x)
-{
-	if (x==0)
-		return 0;
-	return (x>0)?1:-1;
-}
 
 /// The class functions, entrySphere ///
 
-entrySphere::entrySphere(diskEntry *entry, IrrlichtDevice *device, entrySphere *parent) // selected is set true, to allow the constructor to set it false and thus to make function work (it checks the equality of the new state and the old one)
-		: device(device), smgr(device->getSceneManager()), parent(parent),
-		  selected(true), active(true), entry(entry), deleteNodes(true)
+entrySphere::entrySphere(CSphereSystem *system, io::path path, core::stringw name, entrySphere *parent) // selected is set true, to allow the constructor to set it false and thus to make function work (it checks the equality of the new state and the old one)
+		: system(system), parent(parent), fullPath(path), name(name),
+		  selected(true), active(true), deleteNodes(true), opened(false)
 {
-	if (!globalRoot) // first-time init, we are ROOT
-	{
-		globalRoot=globalParent=this;
-		// we need to store it, because working directory will be changed...
-		texPath=device->getFileSystem()->getWorkingDirectory()+io::path("/");
-		drawDebugData=false;
-		positioner=0;
-	}
 }
 
 // create the 3D representation
 void entrySphere::createNode()
 {
 	// node is our center, not really used now, but allows creation of additional animation/transformation layer
-	node=smgr->addEmptySceneNode(parent?parent->getDummy():0);
+	node=system->getSceneManager()->addEmptySceneNode(parent?parent->getDummy():0);
 
-	scene::IMesh *mesh=smgr->addSphereMesh("entrySphere", sphereRadius, sphereDensity, sphereDensity);
+	scene::IMesh *mesh=system->getSceneManager()->addSphereMesh("entrySphere", sphereRadius, sphereDensity, sphereDensity);
 	//smgr->getMeshManipulator()->flipSurfaces(mesh);
 
 	// sphere is out main visual representation
-	sphere=smgr->addMeshSceneNode(mesh, node);
+	sphere=system->getSceneManager()->addMeshSceneNode(mesh, node);
 	//sphere->setMaterialFlag(video::EMF_LIGHTING, false);
 	//sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
 	// deault one, is often overided by childrens' createNode function
-	sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"black.png"));
+	sphere->setMaterialTexture(0, system->getVideoDriver()->getTexture(system->getTexturePath()+"black.png"));
 
 	// dummy is used to animate children without touching this node
-	dummy=smgr->addEmptySceneNode(sphere);
+	dummy=system->getSceneManager()->addEmptySceneNode(sphere);
 
-	// selector is for use of selection (ray intersection) functions
-	scene::ITriangleSelector *selector=smgr->createTriangleSelector(mesh, sphere);
+	// selector is for selection (ray intersection) purpose
+	scene::ITriangleSelector *selector=system->getSceneManager()->createTriangleSelector(mesh, sphere);
 	sphere->setTriangleSelector(selector);
 	selector->drop();
 
 	// this node displays the name of our sphere
-	label=smgr->addTextSceneNode(device->getGUIEnvironment()->getBuiltInFont(), entry->getName().c_str(), video::SColor(255, 0, 0, 0), sphere);
+	label=system->getSceneManager()->addTextSceneNode(system->getGUIEnvironment()->getFont("lucida.xml"), name.c_str(), video::SColor(255, 0, 0, 0), sphere);
 
 	setSelected(false);
 }
 
+void entrySphere::recalcPos()
+{
+	if (system->getPositioner())
+		system->getPositioner()->recalcPositions(system->getSceneManager(), this, children); // TODO! fix
+}
+
+void entrySphere::openEntry(bool updateContent, bool animate)
+{
+	opened=true;
+	if (updateContent)
+		system->updateContent(this);
+
+	if (animate)
+	{
+		dummy->setScale(nullVector);
+		scene::ISceneNodeAnimator *anim=scene::createFixedScaleAnimator(system->getIrrlicht(), nullVector, sphereScaleDef/100, sphereScaleDef);
+		dummy->addAnimator(anim);
+		anim->drop();
+	}
+
+	//if (children.size())
+	//	sphere->setMaterialFlag(video::EMF_POINTCLOUD, true);
+}
+void entrySphere::closeEntry(bool clear, bool animate)
+{
+	opened=false;
+
+	if (animate)
+	{
+		// animate deletion
+		scene::ISceneNodeAnimator *scaleAnim=scene::createFixedScaleAnimator(system->getIrrlicht(), sphereScaleDef, -sphereScaleDef/100, nullVector);
+		dummy->addAnimator(scaleAnim);
+		scaleAnim->drop();
+	}
+
+	if (!clear)
+		return;
+
+	// and this would delete everything else
+	for (u32 i=0; i<children.size(); i++)
+	{
+		if (animate)
+		{
+			// we need to animate them, so...
+			children[i]->setDeleteNodes(false);
+
+			scene::ISceneNodeAnimator *deleteAnim=system->getSceneManager()->createDeleteAnimator(1000);
+			children[i]->getNode()->addAnimator(deleteAnim);
+			deleteAnim->drop();
+		}
+
+		delete children[i];
+	}
+	children.clear();
+
+	//sphere->setMaterialFlag(video::EMF_POINTCLOUD, false);
+}
+
+void entrySphere::updateContent(IContentProvider *provider)
+{
+	provider->updateContent(this);
+}
+
 bool entrySphere::onEvent(const SEvent &event)
 {
+	for (u32 i=0; i<children.size(); i++)
+		if (children[i]->onEvent(event))
+			return true;
+
 	if (!selected)
 		return false;
 
@@ -128,14 +127,6 @@ bool entrySphere::onEvent(const SEvent &event)
 	{
 		switch (event.KeyInput.Key)
 		{
-		case KEY_KEY_Z:
-			if (selected)
-			{
-				//createMegaScaleAnimator(device, node, core::vector3df(1, 1, 1), 1000);
-				setParent(0);
-				return true;
-			}
-			break;
 		case KEY_LEFT:
 		case KEY_RIGHT:
 			{
@@ -145,43 +136,32 @@ bool entrySphere::onEvent(const SEvent &event)
 			break;
 		}
 	}
-	if (event.EventType==EET_MOUSE_INPUT_EVENT)
-	{
-		if (event.MouseInput.Event==EMIE_LMOUSE_PRESSED_DOWN)
-		{
-			updateAbsolutePosition(smgr, sphere);
-			//smgr->getActiveCamera()->setParent(sphere);
-			if (entry->getType()==FOLDER_ENTRY)
-				smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
-			//smgr->getActiveCamera()->setPosition(core::vector3df(500, 500, 500)*sphere->getAbsoluteTransformation().getScale());
-			//smgr->getActiveCamera()->setRotation(nullVector);
-
-			//smgr->getActiveCamera()->setTarget(sphere->getAbsolutePosition());
-			//smgr->getActiveCamera()->setRotation(nullVector);
-			//moveCam(smgr, sphere->getAbsolutePosition()+core::vector3df(30, 50, 30));
-		}
-	}
 	return false;
 }
 
+// also updates lots of 3d position and animation stuff
 void entrySphere::setParent(entrySphere *parent)
 {
-	updateAbsolutePosition(smgr, sphere);
+	updateAbsolutePosition(system->getSceneManager(), sphere);
 	core::vector3df oldPos=sphere->getAbsolutePosition();
 
-	node->setParent(parent ? parent->getDummy() : smgr->getRootSceneNode());
+	node->setParent(parent ? parent->getDummy() : system->getSceneManager()->getRootSceneNode());
+	
+	sphere->setRotation(nullVector);
+
 	sphere->setPosition(parent ? sphereOffsetVec : nullVector);
 	sphere->setScale(parent ? sphereScaleVec : sphereScaleDef);
 
-	//scene::ISceneNodeAnimator *moveAnim=smgr->createFlyStraightAnimator(oldPos, parent ? sphereOffsetVec : nullVector, 1000);
-	//sphere->addAnimator(moveAnim);
-	//moveAnim->drop();
-
 	if (this->parent && !parent)
 	{
-		globalRoot=this;
-		globalParent=this->parent;
+		system->getFolderHistory().push_back(this);
 		this->parent->setActive(false); // set the old parent not visible
+		setActive(true);
+	}
+	else if (!this->parent && parent)
+	{
+		system->getFolderHistory().erase(system->getFolderHistory().size()-1);
+		parent->setActive(true);
 	}
 
 	this->parent=parent;
@@ -189,8 +169,11 @@ void entrySphere::setParent(entrySphere *parent)
 
 void entrySphere::process()
 {
-	video::IVideoDriver *driver=device->getVideoDriver();
-	if (drawDebugData)
+	for (u32 i=0; i<children.size(); i++)
+		children[i]->process();
+
+	video::IVideoDriver *driver=system->getVideoDriver();
+	if (system->isDrawingDebugData())
 	{
 		if (!parent)
 		{
@@ -202,7 +185,7 @@ void entrySphere::process()
 		{
 			// draw two lines from the parent
 			f32 deg=360.0f / (2.0f*core::PI*(sphereRadius+5)/(2*sphereRadius/5)) / 2; // delta angle for the sphere
-			updateAbsolutePosition(smgr, sphere);
+			updateAbsolutePosition(system->getSceneManager(), sphere);
 			driver->draw3DLine(parent->getSphere()->getAbsolutePosition(), sphere->getAbsolutePosition(), video::SColor(255, 0, 255, 255));
 
 			core::vector3df vec=sphere->getAbsolutePosition()-parent->getSphere()->getAbsolutePosition();
@@ -216,8 +199,9 @@ void entrySphere::process()
 				parent->getSphere()->getAbsolutePosition()+ vec*1.5f, video::SColor(255, 255, 0, 255));
 		}
 	}
-	// show or hide our text node based on the distance from the cam
-	float dist=label->getAbsolutePosition().getDistanceFrom(smgr->getActiveCamera()->getAbsolutePosition());
+		// show or hide our text node based on the distance from the cam
+	updateAbsolutePosition(system->getSceneManager(), label);
+	float dist=label->getAbsolutePosition().getDistanceFrom(system->getSceneManager()->getActiveCamera()->getAbsolutePosition());
 	label->setVisible(dist<30);
 }
 
@@ -234,19 +218,21 @@ void entrySphere::setSelected(bool sel)
 
 void entrySphere::setActive(bool active)
 {
+	for (u32 i=0; i<children.size(); i++)
+		children[i]->setActive(active);
+
 	this->active=active;
 	node->setVisible(active);
+	// to avoid the collision detection of invisible sphere,
+	// we should explicitly call it here
+	sphere->setVisible(active);
 }
 
 entrySphere::~entrySphere()
 {
 	if (deleteNodes && node)
 		node->remove();
+	
+	if (children.size())
+		closeEntry();
 }
-
-// declare class's statics
-io::path entrySphere::texPath;
-entrySphere *entrySphere::globalRoot;
-entrySphere *entrySphere::globalParent;
-bool entrySphere::drawDebugData;
-IEntryPositioner *entrySphere::positioner;

@@ -2,6 +2,13 @@
 
 #include "CMainPositioner.h"
 
+int sgn(int x)
+{
+	if (x==0)
+		return 0;
+	return (x>0)?1:-1;
+}
+
 void CMainPositioner::recalcPositions(scene::ISceneManager *smgr, entrySphere *current, core::array<entrySphere*> &children, f32 startAngle, f32 endAngle)
 {
 	int size=children.size();
@@ -42,7 +49,7 @@ void CMainPositioner::recalcPositions(scene::ISceneManager *smgr, entrySphere *c
 			children[curChild]->getSphere()->setPosition(core::vector3df(r*sin(si)*cos(fi), r*cos(si), r*sin(si)*sin(fi)));
 
 			core::vector3df rot(children[curChild]->getSphere()->getPosition().getHorizontalAngle());
-			rot.Y-=45;
+			//rot.Y-=45;
 			children[curChild]->getSphere()->setRotation(rot);
 			curChild++;
 		}

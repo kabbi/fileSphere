@@ -3,8 +3,8 @@
 #include "CFileSphere.h"
 
 // create non-root (of course!)) node
-fileSphere::fileSphere(fileEntry *entry, IrrlichtDevice *device, entrySphere *parent)
-	: entrySphere(entry, device, parent)
+fileSphere::fileSphere(CSphereSystem *system, io::path fullPath, core::stringw name, entrySphere *parent)
+	: entrySphere(system, fullPath, name, parent)
 {
 	if (!parent) // we cant be non-parent...
 		return;
@@ -23,7 +23,7 @@ bool fileSphere::onEvent(const SEvent &event)
 		{
 			if (active && selected)
 			{
-				ShellExecuteW(0, NULL, entry->getFullPath().c_str(), L"", L"", SW_SHOW);
+				ShellExecuteW(0, NULL, core::stringw(fullPath).c_str(), L"", L"", SW_SHOW);
 				return true;
 			}
 		}
@@ -35,7 +35,7 @@ void fileSphere::setParent(entrySphere *parent)
 {
 	entrySphere::setParent(parent);
 
-	sphere->setMaterialTexture(0, device->getVideoDriver()->getTexture(texPath+"red.png"));
+	sphere->setMaterialTexture(0, system->getVideoDriver()->getTexture(system->getTexturePath()+"red.png"));
 }
 
 fileSphere::~fileSphere()

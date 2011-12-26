@@ -112,11 +112,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CCleanupAnimator.cpp" />
+    <ClCompile Include="CFilesystemContentProvider.cpp" />
     <ClCompile Include="CMainPositioner.cpp" />
     <ClCompile Include="CEntrySphere.cpp" />
     <ClCompile Include="CFileSphere.cpp" />
-    <ClCompile Include="fixedScaleAnimator.cpp" />
+    <ClCompile Include="CFixedScaleAnimator.cpp" />
     <ClCompile Include="CFolderSphere.cpp" />
+    <ClCompile Include="CSphereSystem.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -128,8 +131,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CCleanupAnimator.h" />
+    <ClInclude Include="CFilesystemContentProvider.h" />
+    <ClInclude Include="CFixedMoveAnimator.h" />
     <ClInclude Include="CMainPositioner.h" />
+    <ClInclude Include="CSphereSystem.h" />
     <ClInclude Include="diskEntry.h" />
+    <ClInclude Include="IContentProvider.h" />
     <ClInclude Include="IEntryPositioner.h" />
     <ClInclude Include="CEntrySphere.h" />
     <ClInclude Include="CFileSphere.h" />

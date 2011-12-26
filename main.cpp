@@ -4,8 +4,9 @@
 #include <irrlicht.h>
 #include <ctime>
 #include "driverChoice.h"
-#include "CFolderSphere.h"
+#include "CSphereSystem.h"
 #include "CMainPositioner.h"
+#include "CFilesystemContentProvider.h"
 
 using namespace irr;
 
@@ -16,21 +17,9 @@ using namespace irr;
 /// Main TODO list comes here ///
 
 /*
-1-sphere positioning improvements
-2-visual effects
-
-
-
-
-
-
-
-
-
-
-
-
-
+Better class structure (move everything from folderSphere to entrySphere)
+Implement ContentProvider
+Refactor IEntryPositioner
 */
 
 IrrlichtDevice *device;
@@ -39,7 +28,7 @@ gui::IGUIEnvironment *guienv;
 video::IVideoDriver *driver;
 
 video::SColor bgColor;
-folderSphere *root;
+CSphereSystem *sys;
 
 scene::ICameraSceneNode *freeCam, *mainCam;
 
@@ -60,7 +49,7 @@ public:
 				{
 				case KEY_RETURN:
 					{
-						scene::ISceneNode *node=root->getGlobalRoot()->getNode();
+						scene::ISceneNode *node=sys->getRoot()->getNode();
 						if (node->getAnimators().getSize())
 							node->removeAnimators();
 						else
@@ -89,7 +78,7 @@ public:
 					}
 					break;
 				case KEY_F1:
-					root->setDrawDebugData(!root->isDrawingDebugData());
+					sys->setDrawDebugData(!sys->isDrawingDebugData());
 					break;
 				case KEY_BACK:
 					if (bgColor.getLuminance()==0)
@@ -101,8 +90,8 @@ public:
 				}
 			}
 		}
-		if (root)
-			return root->onEvent(event);
+		if (sys)
+			return sys->onEvent(event);
 		return false;
 	}
 };
@@ -131,6 +120,13 @@ int main()
 	device->getFileSystem()->changeWorkingDirectoryTo("data");
 
 	smgr->addSkyDomeSceneNode(driver->getTexture("ImagineWallpaper.BMP"));
+
+	/// gui setup ///
+	{
+		gui::IGUIFont *font=guienv->getFont("lucida.xml");
+		if (font)
+			guienv->getSkin()->setFont(font);
+	}
 	
 	freeCam=smgr->addCameraSceneNodeFPS(0, 100.0f, 0.05f);
 	mainCam=smgr->addCameraSceneNodeMaya();
@@ -142,9 +138,8 @@ int main()
 	smgr->addLightSceneNode(mainCam);//0, mainCam->getPosition());
 
 	// create our root sphere...
-	root=new folderSphere(new folderEntry(core::stringw(L"root"), core::stringw(L"c:/")), device);
-	CMainPositioner poser;
-	root->setPositioner(&poser);
+
+	sys=new CSphereSystem(device, new CFilesystemContentProvider(), new CMainPositioner());
 	//cam->setParent(root->getSphere());
 
 	//core::vector2di centre(driver->getScreenSize().Width/2,driver->getScreenSize().Height/2);
@@ -165,7 +160,7 @@ int main()
 
 			driver->setMaterial(nullMaterial);
 			driver->setTransform(video::ETS_WORLD, core::IdentityMatrix);
-			root->process();
+			sys->process();
 
 			driver->endScene();
 
@@ -182,7 +177,6 @@ int main()
 		}
 	}
 
-	delete root;
 	device->drop();
 
 	return 0;

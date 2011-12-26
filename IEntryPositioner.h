@@ -4,10 +4,13 @@
 #define __IENTRYPOSITIONER_H
 
 #include <irrlicht.h>
+using namespace std;
+
+// pre-define
+class IEntryPositioner;
 #include <cmath>
 #include "CEntrySphere.h"
 #include "programConfig.h"
-using namespace std;
 
 class IEntryPositioner
 {
